@@ -1,4 +1,7 @@
 player:
-    - image: 'res/hero.png'
-    - start: [320,240]
-    - speed: 300
+    image: 'res/hero.png'
+    start: [320,240]
+    speed: 300
+
+block:
+    image: 'res/block.png'

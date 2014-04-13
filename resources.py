@@ -2,9 +2,9 @@ __author__ = 'benoit'
 
 import yaml
 try:
-    import yaml.CLoader as Loader
+    from yaml import CLoader as Loader
 except ImportError:
-    import yaml.Loader as Loader
+    from yaml import Loader as Loader
 
 data = yaml.load(open('resources.yaml'), Loader=Loader)
 
@@ -24,9 +24,31 @@ def getImage(resname):
     if not filename:
         raise ResourceNotFoundError(resname)
 
-def getValue(resname):
+    return filename
+
+def getObject(object_name):
+    try :
+        object_data = data[object_name]
+    except KeyError, ke :
+        raise ResourceNotFoundError(object_name)
+
+    return object_data
+
+def getValue(resource):
     """
     Return the value for the name provided
     """
-    (obj,val) = resname.split('.')
-    return getObj(obj)[val]
+    (object_name, value_name) = resource.split('.')
+
+    object_data = getObject(object_name)
+    try :
+        value = object_data[value_name]
+    except KeyError, kerror:
+        raise ResourceNotFoundError(resource)
+
+    return value
+
+if __name__ == '__main__':
+    print getImage('player')
+    print getValue('player.start')
+    print getValue('player.speed')
