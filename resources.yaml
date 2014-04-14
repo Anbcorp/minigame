@@ -5,3 +5,6 @@ player:
 
 block:
     image: 'res/block.png'
+
+level:
+    size: [600,6000]
