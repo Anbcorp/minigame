@@ -26,6 +26,10 @@ class Player(pygame.sprite.Sprite):
         if key[pygame.K_DOWN]:
             self.rect.y += self.h_speed * dt
 
-        for cell in pygame.sprite.spritecollide(self, game.walls, False):
+        # TODO: collbox is wrong
+        for cell in pygame.sprite.spritecollide(self, game.current_level.walls, False):
             self.rect = last
 
+        # TODO : screen size constants
+        self.groups()[0].camera_x = self.rect.x - 320
+        self.groups()[0].camera_y = self.rect.y - 240

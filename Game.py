@@ -1,9 +1,10 @@
 __author__ = 'Anb'
 
 import pygame
+import level
 import resources
 
-from Player import Player
+from entities import Player
 
 from utils import *
 
@@ -12,21 +13,14 @@ class Game(object):
     def main(self, screen):
         clock = pygame.time.Clock()
 
-        sprites = pygame.sprite.Group()
+        sprites = level.ScrolledGroup()
+        sprites.camera_x = 0
+        sprites.camera_y = 0
         self.player = Player(sprites)
 
-        # TODO: howto load a tile ?
-        block = pygame.image.load(resources.getImage('block'))
-        self.walls = pygame.sprite.Group()
+        self.current_level = level.Level()
 
-        # TODO: level generation here
-        for x in range(0, 640, 32):
-            for y in range(0,480,32):
-                if x in (0,640-32) or y in (0, 480-32):
-                    wall = pygame.sprite.Sprite(self.walls)
-                    wall.image = block
-                    wall.rect = pygame.rect.Rect((x,y), block.get_size())
-        sprites.add(self.walls)
+        sprites.add(self.current_level.walls)
 
         while True:
             dt = clock.tick(30)
@@ -45,6 +39,7 @@ class Game(object):
 
 if __name__ == '__main__':
     pygame.init()
+    # TODO : screen size from conf ? Or at least constant
     screen = pygame.display.set_mode((640,480), pygame.HWSURFACE|pygame.DOUBLEBUF)
 
     Game().main(screen)
