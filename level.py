@@ -22,8 +22,9 @@ class Level(object):
         self.walls = pygame.sprite.Group()
 
         (self.h_size, self.v_size) = resources.getValue('level.size')
-        # TODO: howto load a tile ?
-        block = pygame.image.load(resources.getImage('block'))
+        tiles = pygame.image.load(resources.getImage('level'))
+        # TODO: load a specific tile from resources
+        block = tiles.subsurface(pygame.Rect(64,192,32,32))
         # TODO: level generation here
         # TODO: arbitrary level sizes do not work (empty wall) is not a multiple of 32
         for x in range(0, self.h_size, 32):

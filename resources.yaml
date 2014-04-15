@@ -7,4 +7,5 @@ block:
     image: 'res/block.png'
 
 level:
-    size: [600,6000]
+    size: [960,640]
+    image: 'res/tilea2.png'
