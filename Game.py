@@ -4,7 +4,7 @@ import pygame
 import level
 import resources
 
-from entities import Player
+from entities import Player, Anima
 
 from utils import *
 
@@ -17,6 +17,9 @@ class Game(object):
         sprites.camera_x = 0
         sprites.camera_y = 0
         self.player = Player(sprites)
+
+        for i in range(0,100):
+            Anima(sprites)
 
         self.current_level = level.Level()
 
@@ -32,6 +35,9 @@ class Game(object):
                     return
 
             sprites.update(dt / 1000., self)
+            # TODO : screen size constants
+            sprites.camera_x = self.player.rect.x - 320
+            sprites.camera_y = self.player.rect.y - 240
             screen.fill(RED)
             sprites.draw(screen)
 
