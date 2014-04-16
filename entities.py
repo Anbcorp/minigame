@@ -43,7 +43,7 @@ class WalkingEntity(pygame.sprite.Sprite):
 
     def walk(self, dt):
        self.anim_dt += dt
-       if self.anim_dt > .07:
+       if self.anim_dt > 10./self.h_speed*2:
            self.sprite_idx = (self.sprite_idx+1)%3
            self.anim_dt = 0
 
@@ -88,7 +88,7 @@ class Player(WalkingEntity):
 class Anima(WalkingEntity):
 
     def __init__(self, *groups):
-        super(Anima, self).__init__('player', *groups)
+        super(Anima, self).__init__('ork', *groups)
 
         self.time = 0
         self.directions = [ 'up', 'down', 'left', 'right' ]

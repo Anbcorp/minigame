@@ -3,6 +3,11 @@ player:
     start: [320,240]
     speed: 300
 
+ork:
+    image: 'res/ork.png'
+    start: [320,240]
+    speed: 120
+
 block:
     image: 'res/block.png'
 
