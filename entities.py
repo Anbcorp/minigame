@@ -33,6 +33,7 @@ class WalkingEntity(pygame.sprite.Sprite):
                 }
         self.image = self.sprites['right'][0]
         self.rect = pygame.rect.Rect(resources.getValue('%s.start' % name), self.image.get_size())
+        self.last = self.rect.copy()
         self.h_speed = resources.getValue('%s.speed' % name)
         self.v_speed = resources.getValue('%s.speed' % name)
 
