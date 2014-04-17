@@ -1,15 +1,13 @@
-__author__ = 'benoit'
-
 import pygame
 import random
 
 import resources
+from utils import DIRECTIONS, UP, DOWN, LEFT, RIGHT
 
 class WalkingEntity(pygame.sprite.Sprite):
 
     def __init__(self, name, *groups):
         super(WalkingEntity, self).__init__(*groups)
-        print 'WalkingEntity', name
         self.tileset = pygame.image.load(resources.getImage(name))
         ## set sprites
         self.sprites = { 'up':[
@@ -67,7 +65,6 @@ class Player(WalkingEntity):
         super(Player, self).__init__('player', *groups)
 
     def think(self, dt, game):
-        # TODO: should be a 'think' method
         self.processInput(dt)
 
     def processInput(self, dt):
@@ -91,26 +88,64 @@ class Anima(WalkingEntity):
         super(Anima, self).__init__('ork', *groups)
 
         self.time = 0
-        self.directions = [ 'up', 'down', 'left', 'right' ]
         self.direction = 0
 
     def think(self, dt, game):
         self.time += dt
         if self.time > random.randrange(1,15)/10.:
-            self.direction = random.randint(0,3)
+            self.direction = random.choice(DIRECTIONS)
             self.time = 0
 
-        if self.directions[self.direction] == 'left':
+        if self.direction == LEFT:
             self.rect.x -= self.h_speed * dt
             self.image = self.sprites['left'][self.sprite_idx]
-        if self.directions[self.direction] == 'right':
+        if self.direction == RIGHT:
             self.rect.x += self.h_speed * dt
             self.image = self.sprites['right'][self.sprite_idx]
-        if self.directions[self.direction] == 'up':
+        if self.direction == UP:
             self.rect.y -= self.v_speed * dt
             self.image = self.sprites['up'][self.sprite_idx]
-        if self.directions[self.direction] == 'down':
+        if self.direction == DOWN:
             self.rect.y += self.h_speed * dt
             self.image = self.sprites['down'][self.sprite_idx]
 
+class Ghosted(WalkingEntity):
 
+    def __init__(self, *groups):
+        super(Ghosted, self).__init__('ork', *groups)
+        self.time = 0
+        self.rect.x = 300
+        self.rect.y = 200
+
+    def think(self, dt, game):
+        self.time += dt
+        key = pygame.key.get_pressed()
+        if key[pygame.K_SPACE] and self.time > 0.1:
+            self.colors(dt, game)
+            self.time = 0
+
+    def compare(self,dt, game):
+       pxarray = pygame.PixelArray(self.image.copy())
+       pxarray[0:-1] = 0
+
+       px_image = pygame.PixelArray(self.image)
+
+       npx = pxarray.compare(px_image, distance=.7)
+
+       self.image = npx.make_surface()
+       self.time = 0
+
+    def colors(self, dt, game):
+        pixs = pygame.PixelArray(self.image)
+        ck = self.image.get_colorkey()
+        colmod = random.randint(0,255)
+        for x in range(len(pixs)):
+            for y in range(len(pixs)):
+                if pixs[y][x]:
+                    c = self.image.unmap_rgb(pixs[y][x])
+                    c.b = c.r & colmod
+                    pixs[y][x] = self.image.map_rgb(c)
+
+        self.image = pixs.make_surface()
+        self.image.set_colorkey(ck)
+        print "done"

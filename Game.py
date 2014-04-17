@@ -4,7 +4,7 @@ import pygame
 import level
 import resources
 
-from entities import Player, Anima
+from entities import Player, Anima, Ghosted
 
 from utils import *
 
@@ -18,8 +18,9 @@ class Game(object):
         sprites.camera_y = 0
         self.player = Player(sprites)
 
-        for i in range(0,100):
-            Anima(sprites)
+        self.enemy = Ghosted(sprites)
+       # for i in range(0,100):
+       #     Anima(sprites)
 
         self.current_level = level.Level()
 
