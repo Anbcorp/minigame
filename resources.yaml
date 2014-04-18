@@ -15,5 +15,5 @@ bullet:
     image: 'res/bullet.png'
 
 level:
-    size: [960,640]
+    size: [33,33]
     image: 'res/tilea2.png'

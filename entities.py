@@ -1,3 +1,4 @@
+import math
 import pygame
 import random
 
@@ -11,7 +12,7 @@ class Bullet(pygame.sprite.Sprite):
         super(Bullet, self).__init__(*groups)
         self.image = pygame.image.load(resources.getImage('bullet'))
 
-        self.rect = firepos#pygame.Rect((random.randint(0,640),random.randint(0,480),0,0))
+        self.rect = firepos
         self.direction = direction
         self.speed = 800
 
@@ -25,6 +26,32 @@ class Bullet(pygame.sprite.Sprite):
             self.rect.y -= self.speed * dt
         if self.direction == DOWN:
             self.rect.y += self.speed * dt
+
+class Arrow(pygame.sprite.Sprite):
+    """
+    A projectile with an origin and an attack target used to compute its
+    direction
+    """
+
+    def __init__(self, origin, atkpos, *groups):
+        super(Arrow, self).__init__(*groups)
+        self.image = pygame.image.load(resources.getImage('bullet'))
+
+        self.rect = origin
+        self.speed = 700
+        print atkpos, origin
+        distance = math.sqrt(
+                    math.pow(320 - atkpos[0], 2) +
+                    math.pow(240 - atkpos[1], 2)
+                    )
+        self.direction_x = (atkpos[0] - 320)/distance
+        self.direction_y = (atkpos[1] - 240)/distance
+        print self.direction_x
+        print self.direction_y
+
+    def update(self, dt, game):
+        self.rect.x += self.direction_x * self.speed * dt
+        self.rect.y += self.direction_y * self.speed * dt
 
 class WalkingEntity(pygame.sprite.Sprite):
 
@@ -54,7 +81,7 @@ class WalkingEntity(pygame.sprite.Sprite):
                     ],
                 }
         self.image = self.sprites['right'][0]
-        self.rect = pygame.rect.Rect(resources.getValue('%s.start' % name), self.image.get_size())
+        self.rect = pygame.rect.Rect(resources.getValue('%s.start' % name), (16,24))
         self.last = self.rect.copy()
         self.h_speed = resources.getValue('%s.speed' % name)
         self.v_speed = resources.getValue('%s.speed' % name)
@@ -78,9 +105,12 @@ class WalkingEntity(pygame.sprite.Sprite):
         self.think(dt, game)
 
         # TODO: collbox is wrong
-        for cell in pygame.sprite.spritecollide(self, game.current_level.blockers, False):
+        for cell in pygame.sprite.spritecollide(self,
+            game.current_level.blockers, False):
             self.rect = self.last
         self.last = self.rect.copy()
+
+
 
 
 
@@ -89,32 +119,59 @@ class Player(WalkingEntity):
     def __init__(self, *groups):
         super(Player, self).__init__('player', *groups)
 
+        self.key_pressed = set()
+        self.atks = []
+
     def think(self, dt, game):
         self.processInput(dt, game)
 
+    def process_key_event(self, event):
+        if event.type == pygame.KEYDOWN:
+            self.key_pressed.add(event.key)
+        if event.type == pygame.KEYUP:
+            # Sometime we release a key that was pressed out of game. Ignore
+            # that
+            try:
+                self.key_pressed.remove(event.key)
+            except KeyError:
+                pass
+
+    def process_mouse_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1 :
+                # enqueue attack directions in case of the player clicks faster
+                # than the game can process
+                self.atks.append(event.pos)
+
     def processInput(self, dt, game):
-        key = pygame.key.get_pressed()
-        if key[pygame.K_LEFT]:
-            self.rect.x -= self.h_speed * dt
-            self.direction = LEFT
-            self.image = self.sprites['left'][self.sprite_idx]
-        if key[pygame.K_RIGHT]:
-            self.rect.x += self.h_speed * dt
-            self.direction = RIGHT
-            self.image = self.sprites['right'][self.sprite_idx]
-        if key[pygame.K_UP]:
-            self.rect.y -= self.v_speed * dt
-            self.direction = UP
-            self.image = self.sprites['up'][self.sprite_idx]
-        if key[pygame.K_DOWN]:
-            self.rect.y += self.h_speed * dt
-            self.direction = DOWN
-            self.image = self.sprites['down'][self.sprite_idx]
+        atkpos = self.rect.copy()
+        atkpos.x += 8
+        atkpos.y += 10
+        for key in self.key_pressed:
+            if key == pygame.K_LEFT:
+                self.rect.x -= self.h_speed * dt
+                self.direction = LEFT
+                self.image = self.sprites['left'][self.sprite_idx]
+            if key == pygame.K_RIGHT:
+                self.rect.x += self.h_speed * dt
+                self.direction = RIGHT
+                self.image = self.sprites['right'][self.sprite_idx]
+            if key == pygame.K_UP:
+                self.rect.y -= self.v_speed * dt
+                self.direction = UP
+                self.image = self.sprites['up'][self.sprite_idx]
+            if key == pygame.K_DOWN:
+                self.rect.y += self.h_speed * dt
+                self.direction = DOWN
+                self.image = self.sprites['down'][self.sprite_idx]
 
-        if key[pygame.K_f]:
-            Bullet(self.direction, self.rect.copy(), game.entities)
+            if key == pygame.K_f:
+                Bullet(self.direction, atkpos, game.entities)
 
-
+        # process saved attacks directions and actually fire
+        for pos in self.atks:
+            Arrow(atkpos, pos, game.entities)
+        self.atks = []
 
 class Anima(WalkingEntity):
 
@@ -143,6 +200,11 @@ class Anima(WalkingEntity):
             self.rect.y += self.h_speed * dt
             self.image = self.sprites['down'][self.sprite_idx]
 
+        for cell in pygame.sprite.spritecollide(self, game.entities, False):
+            if isinstance(cell, Arrow) and not isinstance(cell, Player):
+                cell.kill()
+                self.kill()
+
 class Ghosted(WalkingEntity):
 
     def __init__(self, *groups):
@@ -152,6 +214,7 @@ class Ghosted(WalkingEntity):
         self.rect.y = 200
 
     def think(self, dt, game):
+        return
         self.time += dt
         key = pygame.key.get_pressed()
         if key[pygame.K_SPACE] and self.time > 0.1:
@@ -182,7 +245,7 @@ class Ghosted(WalkingEntity):
                     c = self.image.get_at((x, y))
                     (h,s,v,a) = c.hsva
                     hn = (h+60)%360
-                    
+
                     (c.r, c.g, c.b) = utils.hsv2rgb(hn,s,v)
                     self.image.set_at((x,y), c)
                     hp = c.hsva[0]
