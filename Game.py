@@ -14,20 +14,17 @@ class Game(object):
         clock = pygame.time.Clock()
 
         tiles = level.ScrolledGroup()
-        tiles.camera_x = 0
-        tiles.camera_y = 0
-
-        # TODO: camera issues, or Z-level issues ?
-        entities = pygame.sprite.Group()
-        self.player = Player(entities)
-        self.enemy = Ghosted(entities)
-       # for i in range(0,100):
-       #     Anima(sprites)
 
         self.current_level = level.Level()
-
-        tiles.add(self.current_level.walls)
+        tiles.add(self.current_level.blockers)
         tiles.add(self.current_level.tiles)
+
+        entities = level.ScrolledGroup()
+        self.player = Player(entities)
+        self.enemy = Ghosted(entities)
+        for i in range(0,100):
+            Anima(entities)
+
 
         while True:
             dt = clock.tick(30)
@@ -39,9 +36,7 @@ class Game(object):
                     return
 
             entities.update(dt / 1000., self)
-            # TODO : screen size constants
-            tiles.camera_x = self.player.rect.x - 320
-            tiles.camera_y = self.player.rect.y - 240
+            tiles.update(dt / 1000., self)
             screen.fill(RED)
             tiles.draw(screen)
             entities.draw(screen)

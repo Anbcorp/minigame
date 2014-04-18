@@ -54,7 +54,7 @@ class WalkingEntity(pygame.sprite.Sprite):
         self.think(dt, game)
 
         # TODO: collbox is wrong
-        for cell in pygame.sprite.spritecollide(self, game.current_level.walls, False):
+        for cell in pygame.sprite.spritecollide(self, game.current_level.blockers, False):
             self.rect = self.last
         self.last = self.rect.copy()
 

@@ -11,16 +11,38 @@ class ScrolledGroup(pygame.sprite.Group):
 
     This suppose all sprites for the level are kept in memory
     """
+
+    def __init__(self, *sprites):
+        super(ScrolledGroup, self).__init__(*sprites)
+        self._camera_x = 0
+        self._camera_y = 0
+
+    @property
+    def camera(self):
+        return (self._camera_x, self._camera_y)
+    @camera.setter
+    def camera(self, value):
+        self._camera_x = value[0]
+        self._camera_y = value[1]
+
+    def update(self, dt, game, *args):
+        super(ScrolledGroup, self).update(dt, game, *args)
+        # TODO : screen size constants
+        self.camera = (game.player.rect.x - 320, game.player.rect.y - 240)
+
     def draw(self, surface):
         for sprite in self.sprites():
-            surface.blit(sprite.image, (sprite.rect.x - self.camera_x, sprite.rect.y - self.camera_y))
+            surface.blit(sprite.image, (
+                sprite.rect.x - self._camera_x, 
+                sprite.rect.y - self._camera_y)
+            )
 
 class Level(object):
     """
     Basic level object
     """
     def __init__(self):
-        self.walls = pygame.sprite.Group()
+        self.blockers = pygame.sprite.Group()
         self.tiles = pygame.sprite.Group()
 
         (self.h_size, self.v_size) = resources.getValue('level.size')
@@ -34,12 +56,12 @@ class Level(object):
             for y in range(0,self.v_size,32):
                 if x in (0,self.h_size-32) or y in (0, self.v_size-32):
                     # Sprite(*groups) add the new sprites in the groups
-                    wall = pygame.sprite.Sprite(self.walls)
+                    wall = pygame.sprite.Sprite(self.blockers)
                     wall.image = block
                     wall.rect = pygame.rect.Rect((x,y), block.get_size())
                 else:
                     if random.randint(0,12) == 0:
-                        tile = pygame.sprite.Sprite(self.walls)
+                        tile = pygame.sprite.Sprite(self.blockers)
                         tile.image = block
                     else:
                         tile = pygame.sprite.Sprite(self.tiles) 
