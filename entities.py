@@ -89,36 +89,38 @@ class Player(WalkingEntity):
     def __init__(self, *groups):
         super(Player, self).__init__('player', *groups)
 
+        self.key_pressed = set()
+
     def think(self, dt, game):
         self.processInput(dt, game)
 
     def process_key_event(self, event):
-        return
+        if event.type == pygame.KEYDOWN:
+            self.key_pressed.add(event.key)
+        if event.type == pygame.KEYUP:
+            self.key_pressed.remove(event.key)
 
     def processInput(self, dt, game):
-        return
-        key = pygame.key.get_pressed()
-        if key[pygame.K_LEFT]:
-            self.rect.x -= self.h_speed * dt
-            self.direction = LEFT
-            self.image = self.sprites['left'][self.sprite_idx]
-        if key[pygame.K_RIGHT]:
-            self.rect.x += self.h_speed * dt
-            self.direction = RIGHT
-            self.image = self.sprites['right'][self.sprite_idx]
-        if key[pygame.K_UP]:
-            self.rect.y -= self.v_speed * dt
-            self.direction = UP
-            self.image = self.sprites['up'][self.sprite_idx]
-        if key[pygame.K_DOWN]:
-            self.rect.y += self.h_speed * dt
-            self.direction = DOWN
-            self.image = self.sprites['down'][self.sprite_idx]
+        for key in self.key_pressed:
+            if key == pygame.K_LEFT:
+                self.rect.x -= self.h_speed * dt
+                self.direction = LEFT
+                self.image = self.sprites['left'][self.sprite_idx]
+            if key == pygame.K_RIGHT:
+                self.rect.x += self.h_speed * dt
+                self.direction = RIGHT
+                self.image = self.sprites['right'][self.sprite_idx]
+            if key == pygame.K_UP:
+                self.rect.y -= self.v_speed * dt
+                self.direction = UP
+                self.image = self.sprites['up'][self.sprite_idx]
+            if key == pygame.K_DOWN:
+                self.rect.y += self.h_speed * dt
+                self.direction = DOWN
+                self.image = self.sprites['down'][self.sprite_idx]
 
-        if key[pygame.K_f]:
-            Bullet(self.direction, self.rect.copy(), game.entities)
-
-
+            if key == pygame.K_f:
+                Bullet(self.direction, self.rect.copy(), game.entities)
 
 class Anima(WalkingEntity):
 
