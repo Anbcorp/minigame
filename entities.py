@@ -2,7 +2,29 @@ import pygame
 import random
 
 import resources
+import utils
 from utils import DIRECTIONS, UP, DOWN, LEFT, RIGHT
+
+class Bullet(pygame.sprite.Sprite):
+
+    def __init__(self, direction, firepos, *groups):
+        super(Bullet, self).__init__(*groups)
+        self.image = pygame.image.load(resources.getImage('bullet'))
+
+        self.rect = firepos#pygame.Rect((random.randint(0,640),random.randint(0,480),0,0))
+        self.direction = direction
+        self.speed = 800
+
+    def update(self, dt, game):
+
+        if self.direction == LEFT:
+            self.rect.x -= self.speed * dt
+        if self.direction == RIGHT:
+            self.rect.x += self.speed * dt
+        if self.direction == UP:
+            self.rect.y -= self.speed * dt
+        if self.direction == DOWN:
+            self.rect.y += self.speed * dt
 
 class WalkingEntity(pygame.sprite.Sprite):
 
@@ -40,6 +62,8 @@ class WalkingEntity(pygame.sprite.Sprite):
         self.anim_dt = 0
         self.sprite_idx = 0
 
+        self.direction = RIGHT
+
     def walk(self, dt):
        self.anim_dt += dt
        if self.anim_dt > 10./self.h_speed*2:
@@ -66,22 +90,31 @@ class Player(WalkingEntity):
         super(Player, self).__init__('player', *groups)
 
     def think(self, dt, game):
-        self.processInput(dt)
+        self.processInput(dt, game)
 
-    def processInput(self, dt):
+    def processInput(self, dt, game):
         key = pygame.key.get_pressed()
         if key[pygame.K_LEFT]:
             self.rect.x -= self.h_speed * dt
+            self.direction = LEFT
             self.image = self.sprites['left'][self.sprite_idx]
         if key[pygame.K_RIGHT]:
             self.rect.x += self.h_speed * dt
+            self.direction = RIGHT
             self.image = self.sprites['right'][self.sprite_idx]
         if key[pygame.K_UP]:
             self.rect.y -= self.v_speed * dt
+            self.direction = UP
             self.image = self.sprites['up'][self.sprite_idx]
         if key[pygame.K_DOWN]:
             self.rect.y += self.h_speed * dt
+            self.direction = DOWN
             self.image = self.sprites['down'][self.sprite_idx]
+
+        if key[pygame.K_f]:
+            Bullet(self.direction, self.rect.copy(), game.entities)
+
+
 
 class Anima(WalkingEntity):
 
@@ -122,8 +155,13 @@ class Ghosted(WalkingEntity):
         self.time += dt
         key = pygame.key.get_pressed()
         if key[pygame.K_SPACE] and self.time > 0.1:
-            self.colors(dt, game)
+            #self.colors(dt, game)
+            self.blend(dt, game)
             self.time = 0
+
+    def blend(self, dt, game):
+        self.image.fill((0,0,150,0), special_flags = pygame.BLEND_ADD)
+        #self.image.blit(utils.BLUE, (0,0), special_flags = pygame.BLEND_RGB_ADD)
 
     def compare(self,dt, game):
        pxarray = pygame.PixelArray(self.image.copy())
@@ -137,16 +175,18 @@ class Ghosted(WalkingEntity):
        self.time = 0
 
     def colors(self, dt, game):
-        pixs = pygame.PixelArray(self.image)
-        ck = self.image.get_colorkey()
+        pixs = pygame.PixelArray(self.image.copy())
         colmod = random.randint(0,255)
         for x in range(len(pixs)):
             for y in range(len(pixs)):
-                if pixs[y][x]:
-                    c = self.image.unmap_rgb(pixs[y][x])
-                    c.b = c.r & colmod
-                    pixs[y][x] = self.image.map_rgb(c)
+                    c = self.image.get_at((x, y))
+                    (h,s,v,a) = c.hsva
+                    hn = (h+60)%360
+                    
+                    (c.r, c.g, c.b) = utils.hsv2rgb(hn,s,v)
+                    self.image.set_at((x,y), c)
+                    hp = c.hsva[0]
+                    if x == 16 and y == 5:
+                        print h, hn, hp
 
-        self.image = pixs.make_surface()
-        self.image.set_colorkey(ck)
         print "done"

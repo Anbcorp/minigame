@@ -4,7 +4,7 @@ import pygame
 import level
 import resources
 
-from entities import Player, Anima, Ghosted
+from entities import Player, Anima, Ghosted, Bullet
 
 from utils import *
 
@@ -20,10 +20,13 @@ class Game(object):
         tiles.add(self.current_level.tiles)
 
         entities = level.ScrolledGroup()
+        self.entities = entities
         self.player = Player(entities)
-        self.enemy = Ghosted(entities)
-        for i in range(0,100):
+
+        for i in range(0,1000):
             Anima(entities)
+#        self.enemy = Ghosted(entities)
+
 
 
         while True:
