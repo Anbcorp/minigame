@@ -105,9 +105,12 @@ class WalkingEntity(pygame.sprite.Sprite):
         self.think(dt, game)
 
         # TODO: collbox is wrong
-        for cell in pygame.sprite.spritecollide(self, game.current_level.blockers, False):
+        for cell in pygame.sprite.spritecollide(self,
+            game.current_level.blockers, False):
             self.rect = self.last
         self.last = self.rect.copy()
+
+
 
 
 
@@ -136,9 +139,14 @@ class Player(WalkingEntity):
     def process_mouse_event(self, event):
         if event.type == pygame.MOUSEBUTTONDOWN:
             if event.button == 1 :
+                # enqueue attack directions in case of the player clicks faster
+                # than the game can process
                 self.atks.append(event.pos)
 
     def processInput(self, dt, game):
+        atkpos = self.rect.copy()
+        atkpos.x += 8
+        atkpos.y += 10
         for key in self.key_pressed:
             if key == pygame.K_LEFT:
                 self.rect.x -= self.h_speed * dt
@@ -158,11 +166,11 @@ class Player(WalkingEntity):
                 self.image = self.sprites['down'][self.sprite_idx]
 
             if key == pygame.K_f:
-                Bullet(self.direction, self.rect.copy(), game.entities)
+                Bullet(self.direction, atkpos, game.entities)
 
         # process saved attacks directions and actually fire
         for pos in self.atks:
-            Arrow(self.rect.copy(), pos, game.entities)
+            Arrow(atkpos, pos, game.entities)
         self.atks = []
 
 class Anima(WalkingEntity):
@@ -191,6 +199,11 @@ class Anima(WalkingEntity):
         if self.direction == DOWN:
             self.rect.y += self.h_speed * dt
             self.image = self.sprites['down'][self.sprite_idx]
+
+        for cell in pygame.sprite.spritecollide(self, game.entities, False):
+            if isinstance(cell, Arrow) and not isinstance(cell, Player):
+                cell.kill()
+                self.kill()
 
 class Ghosted(WalkingEntity):
 

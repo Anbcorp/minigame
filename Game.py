@@ -71,8 +71,8 @@ class Game(object):
 
         self.event_listener.register_listener(self, pygame.KEYDOWN)
 
-       # for i in range(0,1000):
-       #     Anima(entities)
+        for i in range(0,100):
+            Anima(entities)
 #        self.enemy = Ghosted(entities)
 
         while self.running:
