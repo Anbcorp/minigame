@@ -1,3 +1,4 @@
+import math
 import pygame
 import random
 
@@ -11,7 +12,7 @@ class Bullet(pygame.sprite.Sprite):
         super(Bullet, self).__init__(*groups)
         self.image = pygame.image.load(resources.getImage('bullet'))
 
-        self.rect = firepos#pygame.Rect((random.randint(0,640),random.randint(0,480),0,0))
+        self.rect = firepos
         self.direction = direction
         self.speed = 800
 
@@ -25,6 +26,32 @@ class Bullet(pygame.sprite.Sprite):
             self.rect.y -= self.speed * dt
         if self.direction == DOWN:
             self.rect.y += self.speed * dt
+
+class Arrow(pygame.sprite.Sprite):
+    """
+    A projectile with an origin and an attack target used to compute its
+    direction
+    """
+
+    def __init__(self, origin, atkpos, *groups):
+        super(Arrow, self).__init__(*groups)
+        self.image = pygame.image.load(resources.getImage('bullet'))
+
+        self.rect = origin
+        self.speed = 700
+        print atkpos, origin
+        distance = math.sqrt(
+                    math.pow(320 - atkpos[0], 2) +
+                    math.pow(240 - atkpos[1], 2)
+                    )
+        self.direction_x = (atkpos[0] - 320)/distance
+        self.direction_y = (atkpos[1] - 240)/distance
+        print self.direction_x
+        print self.direction_y
+
+    def update(self, dt, game):
+        self.rect.x += self.direction_x * self.speed * dt
+        self.rect.y += self.direction_y * self.speed * dt
 
 class WalkingEntity(pygame.sprite.Sprite):
 
@@ -90,6 +117,7 @@ class Player(WalkingEntity):
         super(Player, self).__init__('player', *groups)
 
         self.key_pressed = set()
+        self.atks = []
 
     def think(self, dt, game):
         self.processInput(dt, game)
@@ -98,7 +126,17 @@ class Player(WalkingEntity):
         if event.type == pygame.KEYDOWN:
             self.key_pressed.add(event.key)
         if event.type == pygame.KEYUP:
-            self.key_pressed.remove(event.key)
+            # Sometime we release a key that was pressed out of game. Ignore
+            # that
+            try:
+                self.key_pressed.remove(event.key)
+            except KeyError:
+                pass
+
+    def process_mouse_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.button == 1 :
+                self.atks.append(event.pos)
 
     def processInput(self, dt, game):
         for key in self.key_pressed:
@@ -121,6 +159,11 @@ class Player(WalkingEntity):
 
             if key == pygame.K_f:
                 Bullet(self.direction, self.rect.copy(), game.entities)
+
+        # process saved attacks directions and actually fire
+        for pos in self.atks:
+            Arrow(self.rect.copy(), pos, game.entities)
+        self.atks = []
 
 class Anima(WalkingEntity):
 

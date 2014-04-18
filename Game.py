@@ -67,10 +67,12 @@ class Game(object):
         # TODO: its probably not game responsibility to register the player to
         # the event listener
         self.event_listener.register_listener(self.player, pygame.KEYDOWN)
+        self.event_listener.register_listener(self.player, pygame.MOUSEBUTTONDOWN)
+
         self.event_listener.register_listener(self, pygame.KEYDOWN)
 
-        for i in range(0,1000):
-            Anima(entities)
+       # for i in range(0,1000):
+       #     Anima(entities)
 #        self.enemy = Ghosted(entities)
 
         while self.running:
