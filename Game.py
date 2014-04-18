@@ -4,7 +4,7 @@ import pygame
 import level
 import resources
 
-from entities import Player, Anima, Ghosted
+from entities import Player, Anima, Ghosted, Bullet
 
 from utils import *
 
@@ -13,18 +13,21 @@ class Game(object):
     def main(self, screen):
         clock = pygame.time.Clock()
 
-        sprites = level.ScrolledGroup()
-        sprites.camera_x = 0
-        sprites.camera_y = 0
-        self.player = Player(sprites)
-
-        self.enemy = Ghosted(sprites)
-       # for i in range(0,100):
-       #     Anima(sprites)
+        tiles = level.ScrolledGroup()
 
         self.current_level = level.Level()
+        tiles.add(self.current_level.blockers)
+        tiles.add(self.current_level.tiles)
 
-        sprites.add(self.current_level.walls)
+        entities = level.ScrolledGroup()
+        self.entities = entities
+        self.player = Player(entities)
+
+        for i in range(0,1000):
+            Anima(entities)
+#        self.enemy = Ghosted(entities)
+
+
 
         while True:
             dt = clock.tick(30)
@@ -35,12 +38,11 @@ class Game(object):
                     ):
                     return
 
-            sprites.update(dt / 1000., self)
-            # TODO : screen size constants
-            sprites.camera_x = self.player.rect.x - 320
-            sprites.camera_y = self.player.rect.y - 240
+            entities.update(dt / 1000., self)
+            tiles.update(dt / 1000., self)
             screen.fill(RED)
-            sprites.draw(screen)
+            tiles.draw(screen)
+            entities.draw(screen)
 
             pygame.display.flip()
 

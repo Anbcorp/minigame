@@ -11,6 +11,9 @@ ork:
 block:
     image: 'res/block.png'
 
+bullet:
+    image: 'res/bullet.png'
+
 level:
     size: [960,640]
     image: 'res/tilea2.png'

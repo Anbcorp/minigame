@@ -1,9 +1,11 @@
 __author__ = 'benoit'
 
 import math
+import pygame
 
 RED = (255, 0 , 0)
-BLUE = (0, 0, 255)
+BLUE = pygame.Surface((32,32))
+BLUE.fill((0,0,155,255))
 GREEN = (0 , 255, 0)
 
 UP = 0
