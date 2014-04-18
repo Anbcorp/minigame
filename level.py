@@ -33,7 +33,7 @@ class ScrolledGroup(pygame.sprite.Group):
     def draw(self, surface):
         for sprite in self.sprites():
             surface.blit(sprite.image, (
-                sprite.rect.x - self._camera_x, 
+                sprite.rect.x - self._camera_x,
                 sprite.rect.y - self._camera_y)
             )
 
@@ -42,8 +42,8 @@ class Level(object):
     Basic level object
     """
     def __init__(self):
-        self.blockers = pygame.sprite.Group()
-        self.tiles = pygame.sprite.Group()
+        self.blockers = ScrolledGroup()
+        self.tiles = ScrolledGroup()
 
         (self.h_size, self.v_size) = resources.getValue('level.size')
         tiles = pygame.image.load(resources.getImage('level'))
@@ -64,6 +64,14 @@ class Level(object):
                         tile = pygame.sprite.Sprite(self.blockers)
                         tile.image = block
                     else:
-                        tile = pygame.sprite.Sprite(self.tiles) 
+                        tile = pygame.sprite.Sprite(self.tiles)
                         tile.image = grass
                     tile.rect = pygame.rect.Rect((x,y), tile.image.get_size())
+
+    def update(self, dt, game):
+        self.tiles.update(dt, game)
+        self.blockers.update(dt, game)
+
+    def draw(self, screen):
+        self.tiles.draw(screen)
+        self.blockers.draw(screen)

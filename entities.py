@@ -92,7 +92,11 @@ class Player(WalkingEntity):
     def think(self, dt, game):
         self.processInput(dt, game)
 
+    def process_key_event(self, event):
+        return
+
     def processInput(self, dt, game):
+        return
         key = pygame.key.get_pressed()
         if key[pygame.K_LEFT]:
             self.rect.x -= self.h_speed * dt
@@ -152,6 +156,7 @@ class Ghosted(WalkingEntity):
         self.rect.y = 200
 
     def think(self, dt, game):
+        return
         self.time += dt
         key = pygame.key.get_pressed()
         if key[pygame.K_SPACE] and self.time > 0.1:
@@ -182,7 +187,7 @@ class Ghosted(WalkingEntity):
                     c = self.image.get_at((x, y))
                     (h,s,v,a) = c.hsva
                     hn = (h+60)%360
-                    
+
                     (c.r, c.g, c.b) = utils.hsv2rgb(hn,s,v)
                     self.image.set_at((x,y), c)
                     hp = c.hsva[0]
