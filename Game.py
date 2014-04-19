@@ -27,7 +27,6 @@ class EventListener(object):
             if event.type == pygame.QUIT:
                 self.game.quit()
             if event.type == pygame.KEYDOWN or event.type == pygame.KEYUP:
-                print "keydown"
                 for listener in self.key_listeners:
                     listener.process_key_event(event)
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -42,12 +41,11 @@ class Game(object):
         self.level = level.Level
 
     def process_key_event(self, event):
-        print "Game processing event"
         if event.key == pygame.K_n:
             print "New level"
             # TODO: should reset entities
             self.current_level = self.level()
-            self.player.rect = self.current_level.start_pos
+            self.player.move(self.current_level.start_pos)
         if event.key == pygame.K_ESCAPE:
             self.quit()
 
@@ -67,7 +65,7 @@ class Game(object):
         entities = level.ScrolledGroup()
         self.entities = entities
         self.player = Player(entities)
-        self.player.rect = self.current_level.start_pos.copy()
+        self.player.move(self.current_level.start_pos)
         # TODO: its probably not game responsibility to register the player to
         # the event listener
         self.event_listener.register_listener(self.player, pygame.KEYDOWN)

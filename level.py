@@ -47,9 +47,9 @@ class Level(object):
         self.blockers = ScrolledGroup()
         self.tiles = ScrolledGroup()
 
-        (self.h_size, self.v_size) = resources.getValue('level.size')
-        self.h_size *= 32
-        self.v_size *= 32
+        #(self.h_size, self.v_size) = resources.getValue('level.size')
+        self.h_size = 320
+        self.v_size = 320
 
         self.generate()
         self.start_pos = pygame.Rect(64,64,0,0)
@@ -57,8 +57,9 @@ class Level(object):
     def generate(self):
         tiles = pygame.image.load(resources.getImage('level'))
         # TODO: load a specific tile from resources
-        block = tiles.subsurface(pygame.Rect(64,192,32,32))
+        block = tiles.subsurface(pygame.Rect(6*32,3*32,32,32))
         grass = tiles.subsurface(pygame.Rect(0,0,32,32))
+        print block.get_size()
         # TODO: level generation here
         # TODO: arbitrary level sizes do not work (empty wall) is not a multiple of 32
         for x in range(0, self.h_size, 32):
