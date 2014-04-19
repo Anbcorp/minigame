@@ -57,8 +57,9 @@ class Level(object):
     def generate(self):
         tiles = pygame.image.load(resources.getImage('level'))
         # TODO: load a specific tile from resources
-        block = tiles.subsurface(pygame.Rect(64,192,32,32))
+        block = tiles.subsurface(pygame.Rect(6*32,3*32,32,32))
         grass = tiles.subsurface(pygame.Rect(0,0,32,32))
+        print block.get_size()
         # TODO: level generation here
         # TODO: arbitrary level sizes do not work (empty wall) is not a multiple of 32
         for x in range(0, self.h_size, 32):

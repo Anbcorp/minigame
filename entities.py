@@ -35,10 +35,10 @@ class Arrow(pygame.sprite.Sprite):
 
     def __init__(self, origin, atkpos, *groups):
         super(Arrow, self).__init__(*groups)
-        self.image = pygame.image.load(resources.getImage('bullet'))
+        self.image = pygame.image.load("res/bullet.png")
 
-        self.rect = origin
-        self.speed = 700
+        self.rect = pygame.Rect((origin.x, origin.y), (16, 16))
+        self.speed = 300
         print atkpos, origin
         distance = math.sqrt(
                     math.pow(320 - atkpos[0], 2) +
@@ -49,9 +49,68 @@ class Arrow(pygame.sprite.Sprite):
         print self.direction_x
         print self.direction_y
 
+        self.solid = True
+
     def update(self, dt, game):
-        self.rect.x += self.direction_x * self.speed * dt
-        self.rect.y += self.direction_y * self.speed * dt
+        self.last = self.rect.copy()
+
+        vector = (
+            self.direction_x * self.speed * dt,
+            self.direction_y * self.speed * dt,
+            )
+
+        self.move(vector, game)
+
+    def move(self, vector, game):
+        vx = vector[0]
+        vy = vector[1]
+        # We are forced to split the collision problem in two composant
+        if vx != 0 or vy != 0 :
+            if vx != 0 :
+                self.rect.x += vx
+                self.collide(vx, 0, game)
+            if vy != 0 :
+                self.rect.y += vy
+                self.collide(0, vy, game)
+
+    def collide(self, vx, vy, game):
+        if vx != 0 and vy != 0 :
+            raise ValueError()
+
+        sprite = None
+        topbottom = False
+        leftright = False
+        for sprite in pygame.sprite.spritecollide(self, game.current_level.blockers, False, pygame.sprite.collide_rect):
+
+            if  self.rect.x < (sprite.rect.right + self.last.width) and \
+                self.rect.x > (sprite.rect.left - self.last.width) and \
+                vx == 0\
+                :
+                topbottom = True
+
+            if  self.rect.y > (sprite.rect.top - self.last.height) and \
+                self.rect.y < (sprite.rect.bottom + self.last.height) and\
+                vy == 0\
+                :
+                leftright = True
+
+            if not (topbottom or leftright) :
+                return
+            if topbottom and leftright:
+                print "BOOG"
+
+        if topbottom :
+            self.direction_y *= -1
+            if vy > 0:
+                self.rect.bottom = sprite.rect.top - 1
+            if vy < 0:
+                self.rect.top = sprite.rect.bottom + 1
+        if leftright :
+            self.direction_x *= -1
+            if vx > 0:
+                self.rect.right = sprite.rect.left - 1
+            if vx < 0:
+                self.rect.left = sprite.rect.right + 1
 
 class WalkingEntity(pygame.sprite.Sprite):
 
@@ -106,12 +165,17 @@ class WalkingEntity(pygame.sprite.Sprite):
         self.walk(dt)
         self.think(dt, game)
 
+        # spritecollide returns the list of sprite colliding with us. In most
+        # cases, it will contain only one object so iterating is almost free
         # TODO: collbox is wrong
         for cell in pygame.sprite.spritecollide(self,
-            game.current_level.blockers, False):
-            print self.rect, '->', cell.rect, '->', self.last
-            self.rect = self.last
-            break
+                            game.current_level.blockers, False):
+            #print self.last, '->', self.rect, '-!-', cell.rect
+            # TODO: should block only one direction in order
+            # to allow entities to 'slide' on walls
+            pass
+
+            #print self.rect
 
     def move(self, position):
         if isinstance(position, list) or isinstance(position, tuple):
@@ -131,6 +195,7 @@ class Player(WalkingEntity):
 
         self.key_pressed = set()
         self.atks = []
+
 
     def think(self, dt, game):
         self.processInput(dt, game)
