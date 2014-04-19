@@ -81,8 +81,9 @@ class WalkingEntity(pygame.sprite.Sprite):
                     ],
                 }
         self.image = self.sprites['right'][0]
-        self.rect = pygame.rect.Rect(resources.getValue('%s.start' % name), (16,24))
-        self.last = self.rect.copy()
+        self.rect = pygame.rect.Rect(resources.getValue('%s.start' % name),
+            (self.image.get_size()))
+
         self.h_speed = resources.getValue('%s.speed' % name)
         self.v_speed = resources.getValue('%s.speed' % name)
 
@@ -101,18 +102,27 @@ class WalkingEntity(pygame.sprite.Sprite):
         pass
 
     def update(self, dt, game):
+        self.last = self.rect.copy()
         self.walk(dt)
         self.think(dt, game)
 
         # TODO: collbox is wrong
         for cell in pygame.sprite.spritecollide(self,
             game.current_level.blockers, False):
+            print self.rect, '->', cell.rect, '->', self.last
             self.rect = self.last
-        self.last = self.rect.copy()
+            break
 
-
-
-
+    def move(self, position):
+        if isinstance(position, list) or isinstance(position, tuple):
+            self.rect.x = position[0]
+            self.rect.y = position[1]
+        elif isinstance(position, pygame.Rect):
+            self.rect.x = position.x
+            self.rect.y = position.y
+        else:
+            raise ValueError("%s.move " % (self.__class__) +
+                "takes a tuple of coordinates (x,y) or a Rect()")
 
 class Player(WalkingEntity):
 

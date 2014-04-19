@@ -47,9 +47,9 @@ class Level(object):
         self.blockers = ScrolledGroup()
         self.tiles = ScrolledGroup()
 
-        (self.h_size, self.v_size) = resources.getValue('level.size')
-        self.h_size *= 32
-        self.v_size *= 32
+        #(self.h_size, self.v_size) = resources.getValue('level.size')
+        self.h_size = 320
+        self.v_size = 320
 
         self.generate()
         self.start_pos = pygame.Rect(64,64,0,0)
