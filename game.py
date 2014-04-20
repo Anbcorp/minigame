@@ -35,10 +35,13 @@ class EventListener(object):
 
 class Game(object):
 
+    # TODO: game is used everywhere, and we can't have multiple games instance
+    # at the same time. Make it a singleton
     def __init__(self):
         self.event_listener = EventListener(self)
         self.running = True
-        self.level = level.Level
+        self.level = level.MazeLevel
+        print 'Started game', id(self)
 
     def process_key_event(self, event):
         if event.key == pygame.K_n:
