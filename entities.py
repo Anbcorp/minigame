@@ -2,12 +2,15 @@ import math
 import pygame
 import random
 
+from actions import Movement
 import resources
 import utils
 from utils import DIRECTIONS, UP, DOWN, LEFT, RIGHT
 
 class Bullet(pygame.sprite.Sprite):
-
+    """
+    Bullets going straight once launched
+    """
     def __init__(self, direction, firepos, *groups):
         super(Bullet, self).__init__(*groups)
         self.image = pygame.image.load(resources.getImage('bullet'))
@@ -111,6 +114,39 @@ class Arrow(pygame.sprite.Sprite):
                 self.rect.right = sprite.rect.left - 1
             if vx < 0:
                 self.rect.left = sprite.rect.right + 1
+
+class Arrow2(pygame.sprite.Sprite):
+
+    def __init__(self, game, entity, origin, atkpos, *groups):
+        super(Arrow2, self).__init__(*groups)
+
+        self.movement = Movement(game, self)
+
+        self.image = pygame.image.load("res/bullet.png")
+
+        self.rect = pygame.Rect((origin.x, origin.y), (16, 16))
+        self.speed = 300
+        print atkpos, origin
+        distance = math.sqrt(
+                    math.pow(320 - atkpos[0], 2) +
+                    math.pow(240 - atkpos[1], 2)
+                    )
+        self.direction_x = (atkpos[0] - 320)/distance
+        self.direction_y = (atkpos[1] - 240)/distance
+        print self.direction_x
+        print self.direction_y
+
+        self.solid = True
+
+    def update(self, dt, game):
+        self.last = self.rect.copy()
+
+        (xoffset, yoffset) = (
+            self.direction_x * self.speed * dt,
+            self.direction_y * self.speed * dt,
+            )
+
+        self.movement.move(xoffset, yoffset)
 
 class WalkingEntity(pygame.sprite.Sprite):
 
@@ -241,7 +277,8 @@ class Player(WalkingEntity):
                 self.image = self.sprites['down'][self.sprite_idx]
 
             if key == pygame.K_f:
-                Bullet(self.direction, atkpos, game.entities)
+
+                Arrow2(game, self, atkpos, pygame.mouse.get_pos(), game.entities)
 
         # process saved attacks directions and actually fire
         for pos in self.atks:
