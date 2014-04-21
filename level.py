@@ -67,7 +67,7 @@ class Level(object):
 class BasicLevel(Level):
 
     def __init__(self):
-        super(BasicLevel, self).__init__(self)
+        super(BasicLevel, self).__init__()
 
     def generate(self):
         # we use pixels instead of tiles
