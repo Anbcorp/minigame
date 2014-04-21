@@ -18,6 +18,7 @@ def getImage(resname):
     Return the filename corresponding to the resource name provided
     """
     resdata = data.get(resname, None)
+    filename = None
     if resdata:
         filename = resdata.get('image', None)
 
