@@ -35,10 +35,13 @@ class EventListener(object):
 
 class Game(object):
 
+    # TODO: game is used everywhere, and we can't have multiple games instance
+    # at the same time. Make it a singleton
     def __init__(self):
         self.event_listener = EventListener(self)
         self.running = True
-        self.level = level.Level
+        self.level = level.MazeLevel
+        print 'Started game', id(self)
 
     def process_key_event(self, event):
         if event.key == pygame.K_n:
@@ -55,27 +58,22 @@ class Game(object):
     def main(self, screen):
         clock = pygame.time.Clock()
 
-        #tiles = level.ScrolledGroup()
-
         self.current_level = self.level()
         print "ok level"
-       # tiles.add(self.current_level.blockers)
-       # tiles.add(self.current_level.tiles)
 
         entities = level.ScrolledGroup()
         self.entities = entities
-        self.player = Player(entities)
-        self.player.move(self.current_level.start_pos)
-        # TODO: its probably not game responsibility to register the player to
-        # the event listener
-        self.event_listener.register_listener(self.player, pygame.KEYDOWN)
-        self.event_listener.register_listener(self.player, pygame.MOUSEBUTTONDOWN)
+        self.player = Player(self, entities)
+        self.player.move_to(self.current_level.start_pos)
 
         self.event_listener.register_listener(self, pygame.KEYDOWN)
 
-       # for i in range(0,100):
-       #     Anima(entities)
-#        self.enemy = Ghosted(entities)
+        for i in range(0,100):
+            ork = Enemy('ork', entities)
+            # TODO: starting pos and proper collbox for enemies
+            ork.rect = self.player.rect.copy()
+            ork.rect.width = 16
+            ork.rect.height = 16
 
         while self.running:
             dt = clock.tick(30)
