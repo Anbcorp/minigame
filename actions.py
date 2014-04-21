@@ -5,15 +5,13 @@ class Movement(object):
     Base class for movements
     """
 
-    def __init__(self, game, entity):
+    def __init__(self, entity):
         self.entity = entity
-        self.game = game
-        print id(self.game)
-        self.solid_sprites = self.game.current_level.blockers
 
-    def move(self, xoffset, yoffset):
+    def move(self, xoffset, yoffset, colliding_sprites):
         """
-        Move the entity using the provided displacements
+        Move the entity using the provided displacements and check collision
+        with colliding_sprites group
 
         Returns a list of sprite we collided with
         """
@@ -21,12 +19,16 @@ class Movement(object):
         if xoffset != 0 or yoffset != 0 :
             if xoffset != 0 :
                 self.entity.rect.x += xoffset
-                colliding_sprites = self.collide(xoffset, 0)
+                collided_sprites = self.collide(xoffset, 0, colliding_sprites)
             if yoffset != 0 :
                 self.entity.rect.y += yoffset
-                colliding_sprites += self.collide(0, yoffset)
+                collided_sprites += self.collide(0, yoffset, colliding_sprites)
 
-    def collide(self, xoffset, yoffset):
+        # Launch callbacks for touched sprites
+        for sprite in collided_sprites :
+            self.entity.touched_by(sprite)
+
+    def collide(self, xoffset, yoffset, colliding_sprites):
         """
         Check if the entity collided with the provided spritegroup
 
@@ -43,12 +45,12 @@ class Movement(object):
         sprite = None
         topbottom = False
         leftright = False
-        colliding_sprites = pygame.sprite.spritecollide(entity,
-            self.solid_sprites,
+        collided_sprites = pygame.sprite.spritecollide(entity,
+            colliding_sprites,
             False,
             pygame.sprite.collide_rect)
 
-        for sprite in colliding_sprites:
+        for sprite in collided_sprites:
             if  entity.rect.x < (sprite.rect.right + entity.last.width) and \
                 entity.rect.x > (sprite.rect.left - entity.last.width) and \
                 xoffset == 0\
@@ -70,11 +72,16 @@ class Movement(object):
 
             self.collision_react(sprite, topbottom, leftright, xoffset, yoffset)
 
-        return colliding_sprites
+        return collided_sprites
 
     def collision_react(self, sprite, topbottom, leftright, xoffset, yoffset):
-        # This is where collision reaction happen
-        # It should be possible to change it
+        """
+        This is where collision reaction happen (rebound, glue, passthrough in
+        certain cases)
+
+        Entities interactions (hit, knockback) should be handled by
+        Entity.touched_by(entity)
+        """
         if topbottom :
             self.entity.direction_y *= -1
             if yoffset > 0:
