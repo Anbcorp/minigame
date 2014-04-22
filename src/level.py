@@ -4,8 +4,8 @@ import numpy
 import pygame
 import random
 
-import resources
-from utils import DIRECTIONS, DOWN, LEFT, RIGHT, UP
+from lib import resources
+from lib.utils import DIRECTIONS, DOWN, LEFT, RIGHT, UP
 
 class ScrolledGroup(pygame.sprite.Group):
     """

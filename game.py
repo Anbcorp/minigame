@@ -1,9 +1,10 @@
 import pygame
-import level
 
-from entities import *
 
-from utils import *
+
+from lib.utils import *
+from src import level
+from src.entities import *
 
 class EventListener(object):
     """
@@ -87,7 +88,7 @@ class Game(object):
            # tiles.update(dt / 1000., self)
 
             # draw screen
-            screen.fill(RED)
+            screen.fill((255,0,0))
             self.current_level.draw(screen)
           #  tiles.draw(screen)
             entities.draw(screen)
