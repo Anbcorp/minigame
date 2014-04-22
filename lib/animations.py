@@ -1,10 +1,34 @@
 import pygame
 
 from utils import UP, DOWN, LEFT, RIGHT
-class EntityAnimation(object):
+
+
+class Animation(object):
+
     def __init__(self, entity):
-        # define sprites here
         self.entity = entity
+
+    def animate(self, delta_time, game):
+        pass
+
+class StaticAnimation(Animation):
+    """
+    Mockup to handle non animated objects
+
+    Use the tileset as the single animation frame.
+    """
+    def __init__(self, entity):
+        super(StaticAnimation, self).__init__(entity)
+        self.entity.image = self.entity.tileset
+
+class EntityAnimation(Animation):
+    """
+    Animates entity or anything that have 4 animations (one per direction) of 3
+    frames each
+    """
+    def __init__(self, entity):
+        super(EntityAnimation, self).__init__(entity)
+        # TODO: handles more (or less) than three frames per animation
         self.sprites = {
                 'up':[
                     entity.tileset.subsurface(pygame.Rect(0,96,32,32)),
@@ -32,7 +56,7 @@ class EntityAnimation(object):
 
         self.entity.image = self.sprites['right'][0]
 
-    def animate(self, delta_time):
+    def animate(self, delta_time, game):
         speed = self.entity.h_speed
         self.elapsed_time += delta_time
 

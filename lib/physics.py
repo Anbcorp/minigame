@@ -20,9 +20,14 @@ class Displacement(object):
     def move(self, xoffset, yoffset, colliding_sprites):
         pass
 
-class WalkingDisplacement(Displacement):
+class BaseDisplacement(Displacement):
+    """
+    Handle basic moving of objects with simple collision handling
+
+    Objects will be blocked by anything in colliding_sprites
+    """
     def __init__(self, entity):
-        super(WalkingDisplacement, self).__init__(entity)
+        super(BaseDisplacement, self).__init__(entity)
 
 
     def move(self, xoffset, yoffset, colliding_sprites):
@@ -112,3 +117,26 @@ class WalkingDisplacement(Displacement):
                 self.entity.rect.right = sprite.rect.left - 1
             if xoffset < 0:
                 self.entity.rect.left = sprite.rect.right + 1
+
+class ReboundDisplacement(BaseDisplacement):
+    """
+    Anything we collide with will produce a (more or less) realistic rebound
+    """
+
+    def collision_react(self, sprite, topbottom, leftright, xoffset, yoffset):
+        """
+        Handles rebound when colliding into something
+        """
+        if topbottom :
+            self.entity.vector[1] *= -1
+            if yoffset > 0:
+                self.entity.rect.bottom = sprite.rect.top - 1
+            if yoffset < 0:
+                self.entity.rect.top = sprite.rect.bottom + 1
+        if leftright :
+            self.entity.vector[0] *= -1
+            if xoffset > 0:
+                self.entity.rect.right = sprite.rect.left - 1
+            if xoffset < 0:
+                self.entity.rect.left = sprite.rect.right + 1
+

@@ -45,7 +45,7 @@ class Entity(pygame.sprite.Sprite):
 
     def animate(self, delta_time, game):
         if self.animation:
-            self.animation.animate(delta_time)
+            self.animation.animate(delta_time, game)
 
     def think(self, delta_time, game):
         if self.brain:

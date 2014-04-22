@@ -3,8 +3,8 @@ import pygame
 
 from lib import resources
 from lib.utils import UP, DOWN, LEFT, RIGHT
-from lib.animations import EntityAnimation
-from lib.physics import WalkingDisplacement
+from lib.animations import EntityAnimation, StaticAnimation
+from lib.physics import BaseDisplacement, ReboundDisplacement
 from lib.ai import WandererBrain, DumbBrain
 from lib.entities import Entity
 
@@ -37,147 +37,34 @@ class Arrow(Entity):
     direction
     """
 
-    def __init__(self, origin, atkpos, *groups):
+    def __init__(self, origin, atkpos, game, *groups):
         super(Arrow, self).__init__('bullet', *groups)
 
+        self.animation = StaticAnimation(self)
+        self.displacement = ReboundDisplacement(self)
+        self.displacement.set_speed(300)
+
         self.rect = pygame.Rect((origin.x, origin.y), (16, 16))
-        self.speed = 300
-        print atkpos, origin
+
+        self.solid_objects = game.current_level.blockers
+
         distance = math.sqrt(
                     math.pow(320 - atkpos[0], 2) +
                     math.pow(240 - atkpos[1], 2)
                     )
-        self.direction_x = (atkpos[0] - 320)/distance
-        self.direction_y = (atkpos[1] - 240)/distance
-        print self.direction_x
-        print self.direction_y
 
-        self.solid = True
+        self.vector = [
+            (atkpos[0] - 320)/distance * self.displacement.h_speed,
+            (atkpos[1] - 240)/distance * self.displacement.v_speed,
+            ]
 
-    def update(self, dt, game):
-        self.last = self.rect.copy()
-
-        vector = (
-            self.direction_x * self.speed * dt,
-            self.direction_y * self.speed * dt,
-            )
-
-        self.move(vector, game)
-
-    def move(self, vector, game):
-        vx = vector[0]
-        vy = vector[1]
-        # We are forced to split the collision problem in two composant
-        if vx != 0 or vy != 0 :
-            if vx != 0 :
-                self.rect.x += vx
-                self.collide(vx, 0, game)
-            if vy != 0 :
-                self.rect.y += vy
-                self.collide(0, vy, game)
-
-    def collide(self, vx, vy, game):
-        if vx != 0 and vy != 0 :
-            raise ValueError()
-
-        sprite = None
-        topbottom = False
-        leftright = False
-        for sprite in pygame.sprite.spritecollide(self, game.current_level.blockers, False, pygame.sprite.collide_rect):
-
-            if  self.rect.x < (sprite.rect.right + self.last.width) and \
-                self.rect.x > (sprite.rect.left - self.last.width) and \
-                vx == 0\
-                :
-                topbottom = True
-
-            if  self.rect.y > (sprite.rect.top - self.last.height) and \
-                self.rect.y < (sprite.rect.bottom + self.last.height) and\
-                vy == 0\
-                :
-                leftright = True
-
-            if not (topbottom or leftright) :
-                return
-            if topbottom and leftright:
-                print "BOOG"
-
-        if topbottom :
-            self.direction_y *= -1
-            if vy > 0:
-                self.rect.bottom = sprite.rect.top - 1
-            if vy < 0:
-                self.rect.top = sprite.rect.bottom + 1
-        if leftright :
-            self.direction_x *= -1
-            if vx > 0:
-                self.rect.right = sprite.rect.left - 1
-            if vx < 0:
-                self.rect.left = sprite.rect.right + 1
-
-class Entity(pygame.sprite.Sprite):
-    """
-    Base class for entities
-    """
-    def __init__(self, name, *groups):
-        super(Entity, self).__init__(*groups)
-        self.animation = None
-        self.brain = None
-        self.displacement = None
-        self.attack = None
-
-        self.tileset = pygame.image.load(resources.getImage(name))
-        self.direction = RIGHT
-
-    @property
-    def h_speed(self):
-        if self.displacement:
-            return self.displacement.h_speed
-        return 0
-
-    @property
-    def v_speed(self):
-        if self.displacement:
-            return self.displacement.v_speed
-        return 0
-
-    @property
-    def vector(self):
-        if self.displacement:
-            return self.displacement.vector
-        return [0,0]
-    @vector.setter
-    def vector(self, vector):
-        if self.displacement:
-            if not isinstance(vector, list) or len(vector) < 2:
-                raise ValueError('Vector is a two value list')
-            self.displacement.vector = vector[0:2]
-
-    def animate(self, delta_time, game):
-        if self.animation:
-            self.animation.animate(delta_time)
-
-    def think(self, delta_time, game):
-        if self.brain:
-            self.brain.think(delta_time, game)
 
     def move(self, delta_time, game):
-        if self.displacement:
-            self.displacement.move(self.vector[0], self.vector[1],
-                self.solid_objects)
+        vector = self.vector[:]
+        vector[0] *= delta_time
+        vector[1] *= delta_time
+        self.displacement.move(vector[0], vector[1], self.solid_objects)
 
-    def fire_attack(self, delta_time, game):
-        if self.attack:
-            self.attack.fire_attack(self.target)
-
-    def touched_by(self, entity):
-        pass
-
-    def update(self, delta_time, game):
-        self.think(delta_time, game)
-        self.animate(delta_time, game)
-        self.move(delta_time, game)
-        self.fire_attack(delta_time, game)
 
 class Enemy(Entity):
 
@@ -185,7 +72,7 @@ class Enemy(Entity):
         super(Enemy, self).__init__(name, *groups)
 
         self.animation = EntityAnimation(self)
-        self.displacement = WalkingDisplacement(self)
+        self.displacement = BaseDisplacement(self)
         self.displacement.set_speed(resources.getValue('%s.speed' % name))
         self.brain = WandererBrain(self)
 
@@ -247,7 +134,7 @@ class PlayerControlledBrain(DumbBrain):
 
         # process saved attacks directions and actually fire
         for pos in self.atks:
-            Arrow(atkpos, pos, game.entities)
+            Arrow(atkpos, pos, game, game.entities)
         self.atks = []
 
 class Player(Entity):
@@ -263,7 +150,7 @@ class Player(Entity):
         self.animation = EntityAnimation(self)
         self.rect = pygame.Rect((0,0), (16,24))
 
-        self.displacement = WalkingDisplacement(self)
+        self.displacement = BaseDisplacement(self)
         self.displacement.set_speed(resources.getValue('%s.speed' % 'player'))
 
     def move_to(self, new_position):
