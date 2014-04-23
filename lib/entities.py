@@ -15,6 +15,7 @@ class Entity(pygame.sprite.Sprite):
         self.brain = None
         self.displacement = None
         self.attack = None
+        self.sound_fx = None
 
         self.tileset = pygame.image.load(resources.getImage(name))
         self.direction = RIGHT
