@@ -7,6 +7,7 @@ from lib.animations import EntityAnimation, StaticAnimation
 from lib.physics import BaseDisplacement, ReboundDisplacement
 from lib.ai import WandererBrain, DumbBrain
 from lib.entities import Entity
+from lib.sounds import SoundFx
 
 class Bullet(pygame.sprite.Sprite):
     """
@@ -58,6 +59,7 @@ class Arrow(Entity):
             (atkpos[1] - 240)/distance * self.displacement.v_speed,
             ]
 
+        self.sound_fx = SoundFx('bullet')
 
     def move(self, delta_time, game):
         vector = self.vector[:]
@@ -65,6 +67,8 @@ class Arrow(Entity):
         vector[1] *= delta_time
         self.displacement.move(vector[0], vector[1], self.solid_objects)
 
+    def touched_by(self, entities):
+        self.sound_fx.play_sound('hit')
 
 class Enemy(Entity):
 

@@ -95,6 +95,7 @@ class Game(object):
             pygame.display.flip()
 
 if __name__ == '__main__':
+    pygame.mixer.pre_init(buffer=2048)
     pygame.init()
     # TODO : screen size from conf ? Or at least constant
     screen = pygame.display.set_mode((640,480), pygame.HWSURFACE|pygame.DOUBLEBUF)
