@@ -64,6 +64,7 @@ class Level(object):
         self.tiles.draw(screen)
         self.blockers.draw(screen)
 
+
 class BasicLevel(Level):
 
     def __init__(self):
@@ -76,6 +77,7 @@ class BasicLevel(Level):
         tiles = pygame.image.load(resources.getImage('level'))
         # TODO: load a specific tile from resources
         block = tiles.subsurface(pygame.Rect(6*32,3*32,32,32))
+
         grass = tiles.subsurface(pygame.Rect(0,0,32,32))
         print block.get_size()
         # TODO: level generation here
@@ -102,12 +104,35 @@ class MazeLevel(Level):
     def __init__(self):
         super(MazeLevel, self).__init__()
 
+        self.blockers
+
     def generate(self):
         h_size = self.h_size
         v_size = self.v_size
+        def getTile(x,y,size=16):
+            return tiles.subsurface(pygame.Rect(x*16,y*16,16,16))
+
         tiles = pygame.image.load(resources.getImage('level'))
         # TODO: load a specific tile from resources
         block = tiles.subsurface(pygame.Rect(64,192,32,32))
+        blocks = {
+            'N1':getTile(5,14),
+            'N2':getTile(6,14),
+            'S1':getTile(5,17),
+            'S2':getTile(6,17),
+            'E1':getTile(7,15),
+            'E2':getTile(7,16),
+            'W1':getTile(4,15),
+            'W2':getTile(4,16),
+            'NW':getTile(4,14),
+            'NE':getTile(7,14),
+            'SW':getTile(4,17),
+            'SE':getTile(7,17),
+            'mNW':getTile(5,15),
+            'mNE':getTile(6,15),
+            'mSW':getTile(5,16),
+            'mSE':getTile(6,16),
+        }
         grass = tiles.subsurface(pygame.Rect(0,0,32,32))
 
         level = numpy.zeros((h_size, v_size))
@@ -156,9 +181,87 @@ class MazeLevel(Level):
         for y in range(0, v_size):
             for x in range(0, h_size):
                 if level[x,y] == 0:
+                    # place tiles according to surroundings
+                    # the resulting surface is 32x32
                     wall = pygame.sprite.Sprite(self.blockers)
-                    wall.image = block
-                    wall.rect = pygame.rect.Rect((x*32,y*32), block.get_size())
+                    wall.image = pygame.Surface((32,32))
+                    # get value for 8 tiles surroundings
+                    def get_adj_tile(x, y):
+                        if x > h_size-1 or x < 0 :
+                            return 0
+                        if y > v_size-1 or y < 0 :
+                            return 0
+                        print int(level[x,y])
+                        return int(level[x,y])
+
+                    n  = int(get_adj_tile(x,y-1))   << 0
+                    ne = int(get_adj_tile(x+1,y-1)) << 1
+                    e  = int(get_adj_tile(x+1,y))   << 2
+                    se = int(get_adj_tile(x+1,y+1)) << 3
+                    s  = int(get_adj_tile(x,y+1))   << 4
+                    sw = int(get_adj_tile(x-1,y+1)) << 5
+                    w  = int(get_adj_tile(x-1,y))   << 6
+                    nw = int(get_adj_tile(x-1,y-1)) << 7
+
+                    v = n+s+e+w+nw+ne+sw+se
+                    # Assign a bit for each tile surrounding
+                    # | 128 |   1 |   2 |
+                    # |  64 | til |   4 |
+                    # |  32 |  16 |   8 |
+                    #
+                    # then for each quadrant of our tile, we have four cases
+                    # (the fifth if redundant) these cases wille be represented
+                    # by values, obtained by masking bits
+                    qNW = v & 0b11000001
+                    qNE = v & 0b00000111
+                    qSE = v & 0b00011100
+                    qSW = v & 0b01110000
+
+                    # for the NW quadrant (x is our tile, O is empty, X is
+                    # filled)
+                    if qNW == 193:
+                        # OO
+                        # Ox
+                        tNW = blocks['NW']
+                    elif qNW == 129:
+                        # OO
+                        # Xx
+                        tNW = blocks['N1']
+                    elif qNW == 192:
+                        # XO
+                        # Xx
+                        tNW = blocks['W1']
+                    else:
+                        # XX
+                        # Xx
+                        tNW = blocks['mNW']
+
+                    if qNE == 7:
+                        # 111
+                        # OO
+                        # xO
+                        tNE = blocks['NE']
+                    elif qNE == 3:
+                        # OO
+                        # xX
+                        tNE = blocks['N2']
+                    elif qNE == 6:
+                        # XO
+                        # xX
+                        tNE = blocks['E1']
+                    else:
+                        # XX
+                        # xX
+                        tNE = blocks['mNE']
+
+                    tSE = blocks['SE']
+                    tSW = blocks['SW']
+                    # We blit the smaller tiles into a larger one
+                    wall.image.blit(tNW, (0,0))
+                    wall.image.blit(tNE, (16,0))
+                    wall.image.blit(tSE, (16,16))
+                    wall.image.blit(tSW, (0,16))
+                    wall.rect = pygame.rect.Rect((x*32,y*32), (32,32))
                 else:
                     tile = pygame.sprite.Sprite(self.tiles)
                     tile.image = grass
