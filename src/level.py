@@ -191,7 +191,6 @@ class MazeLevel(Level):
                             return 0
                         if y > v_size-1 or y < 0 :
                             return 0
-                        print int(level[x,y])
                         return int(level[x,y])
 
                     n  = int(get_adj_tile(x,y-1))   << 0
@@ -254,8 +253,42 @@ class MazeLevel(Level):
                         # xX
                         tNE = blocks['mNE']
 
-                    tSE = blocks['SE']
-                    tSW = blocks['SW']
+                    if qSE == 28:
+                        # 111
+                        # xO
+                        # OO
+                        tSE = blocks['SE']
+                    elif qSE == 12:
+                        # xO
+                        # XO
+                        tSE = blocks['E2']
+                    elif qSE == 24:
+                        # xX
+                        # OO
+                        tSE = blocks['S2']
+                    else:
+                        # xX
+                        # XX
+                        tSE = blocks['mSE']
+
+                    if qSW == 112:
+                        # 111
+                        # Ox
+                        # OO
+                        tSW = blocks['SW']
+                    elif qSW == 48:
+                        # Xx
+                        # OO
+                        tSW = blocks['S1']
+                    elif qSW == 96:
+                        # Ox
+                        # OX
+                        tSW = blocks['W2']
+                    else:
+                        # Xx
+                        # XX
+                        tSW = blocks['mSW']
+
                     # We blit the smaller tiles into a larger one
                     wall.image.blit(tNW, (0,0))
                     wall.image.blit(tNE, (16,0))
