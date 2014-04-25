@@ -49,7 +49,7 @@ class Game(object):
             print "New level"
             # TODO: should reset entities
             self.current_level = self.level()
-            self.player.move(self.current_level.start_pos)
+            self.player.move_to(self.current_level.start_pos)
         if event.key == pygame.K_ESCAPE:
             self.quit()
 
