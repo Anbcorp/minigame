@@ -114,7 +114,7 @@ class MazeLevel(Level):
 
         tiles = pygame.image.load(resources.getImage('level'))
         # TODO: load a specific tile from resources
-        block = tiles.subsurface(pygame.Rect(64,192,32,32))
+        block = tiles.subsurface(pygame.Rect(3,10,16,16))
         blocks = {
             'N1':getTile(5,14),
             'N2':getTile(6,14),
@@ -248,7 +248,7 @@ class MazeLevel(Level):
                         # Xx
                         if x == h_size -1 and y == v_size -1:
                             print "inner NW"
-                        tNW == blocks['iNW']
+                        tNW = blocks['iNW']
                     else:
                         # XX
                         # Xx
@@ -320,7 +320,7 @@ class MazeLevel(Level):
                         # XX
                         tSW = blocks['mSW']
 
-                    print x,y, tNW == blocks['N1']
+
                     # We blit the smaller tiles into a larger one
                     wall.image.blit(tNW, (0,0))
                     wall.image.blit(tNE, (16,0))
