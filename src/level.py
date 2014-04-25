@@ -132,6 +132,10 @@ class MazeLevel(Level):
             'mNE':getTile(6,15),
             'mSW':getTile(5,16),
             'mSE':getTile(6,16),
+            'iNW':getTile(6,12),
+            'iNE':getTile(7,12),
+            'iSE':getTile(7,13),
+            'iSW':getTile(6,13),
         }
         grass = tiles.subsurface(pygame.Rect(0,0,32,32))
 
@@ -208,87 +212,115 @@ class MazeLevel(Level):
                     # |  64 | til |   4 |
                     # |  32 |  16 |   8 |
                     #
-                    # then for each quadrant of our tile, we have four cases
-                    # (the fifth if redundant) these cases wille be represented
-                    # by values, obtained by masking bits
+                    # then for each quadrant of our tile, the surroudings are
+                    # represented by values
                     qNW = v & 0b11000001
                     qNE = v & 0b00000111
                     qSE = v & 0b00011100
                     qSW = v & 0b01110000
 
+                    # O is empty (==1)
+                    # X is filled (==0)
+                    # add the values for Os
+
                     # for the NW quadrant (x is our tile, O is empty, X is
                     # filled)
-                    if qNW == 193:
-                        # OO
-                        # Ox
+                    if x == h_size -1 and y == v_size -1:
+                        print qNW, qNE, qSE, qSW
+                    if x == h_size -2 and y == v_size -1:
+                        print qNW, qNE, qSE, qSW
+                    if qNW == 193 or qNW == 65:
+                        # OO XO
+                        # Ox Ox
                         tNW = blocks['NW']
-                    elif qNW == 129:
-                        # OO
-                        # Xx
+                    elif qNW == 1 or qNW == 129:
+                        # OO XO
+                        # Xx Xx
+
+                        print x,y,"N1"
                         tNW = blocks['N1']
-                    elif qNW == 192:
-                        # XO
-                        # Xx
+                    elif qNW == 192 or qNW == 64:
+                        # OX XX
+                        # Ox Ox
                         tNW = blocks['W1']
+                    elif qNW == 128:
+                        # OX
+                        # Xx
+                        if x == h_size -1 and y == v_size -1:
+                            print "inner NW"
+                        tNW == blocks['iNW']
                     else:
                         # XX
                         # Xx
                         tNW = blocks['mNW']
 
-                    if qNE == 7:
+                    if qNE == 7 or qNE == 5:
                         # 111
-                        # OO
-                        # xO
+                        # OO OX
+                        # xO xO
                         tNE = blocks['NE']
-                    elif qNE == 3:
-                        # OO
-                        # xX
+                    elif qNE == 3 or qNE == 1:
+                        # OO OX
+                        # xX xX
                         tNE = blocks['N2']
-                    elif qNE == 6:
-                        # XO
-                        # xX
+                    elif qNE == 6 or qNE == 4:
+                        # XO XX
+                        # xO xO
                         tNE = blocks['E1']
+                    elif qNE == 2:
+                        # X0
+                        # xX
+                        tNE = blocks['iNE']
                     else:
                         # XX
                         # xX
                         tNE = blocks['mNE']
 
-                    if qSE == 28:
+                    if qSE == 28 or qSE == 20:
                         # 111
-                        # xO
-                        # OO
+                        # xO xO
+                        # OO OX
                         tSE = blocks['SE']
-                    elif qSE == 12:
-                        # xO
-                        # XO
+                    elif qSE == 12 or qSE == 4:
+                        # xO xO
+                        # XO XX
                         tSE = blocks['E2']
-                    elif qSE == 24:
-                        # xX
-                        # OO
+                    elif qSE == 24 or qSE == 16:
+                        # xX xX
+                        # OO OX
                         tSE = blocks['S2']
+                    elif qSE == 8:
+                        # xX
+                        # XO
+                        tSE = blocks['iSE']
                     else:
                         # xX
                         # XX
                         tSE = blocks['mSE']
 
-                    if qSW == 112:
+                    if qSW == 112 or qSW == 80:
                         # 111
-                        # Ox
-                        # OO
+                        # Ox Ox
+                        # OO XO
                         tSW = blocks['SW']
-                    elif qSW == 48:
-                        # Xx
-                        # OO
+                    elif qSW == 48 or qSW == 16:
+                        # Xx Xx
+                        # OO XO
                         tSW = blocks['S1']
-                    elif qSW == 96:
-                        # Ox
-                        # OX
+                    elif qSW == 96 or qSW == 64:
+                        # Ox Ox
+                        # OX XX
                         tSW = blocks['W2']
+                    elif qSW == 32:
+                        # Xx
+                        # OX
+                        tSW = blocks['iSW']
                     else:
                         # Xx
                         # XX
                         tSW = blocks['mSW']
 
+                    print x,y, tNW == blocks['N1']
                     # We blit the smaller tiles into a larger one
                     wall.image.blit(tNW, (0,0))
                     wall.image.blit(tNE, (16,0))
